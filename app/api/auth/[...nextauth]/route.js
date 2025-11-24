@@ -1,3 +1,5 @@
+// app/api/auth/[...nextauth]/route.js
+
 import { compare } from "bcryptjs";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -24,33 +26,44 @@ export const authOptions = {
 
         if (!isValid) return null;
 
-        // 4. return users ke session (TAMBAHKAN ROLE)
+        // 4. return users ke session (TAMBAHKAN SEMUA DATA)
         return {
           id: user.id,
           email: user.email,
           name: user.username,
-          role: user.role 
+          role: user.role,
+          username: user.username,
+          profile_picture: user.profile_picture,
         };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // Tambahkan role ke token jika user ada (saat login)
+      // Tambahkan semua data user ke token saat login
       if (user) {
+        token.id = user.id; // INI YANG PENTING!
         token.role = user.role;
+        token.username = user.username;
+        token.profile_picture = user.profile_picture;
       }
       return token;
     },
     async session({ session, token }) {
-      // Tambahkan role ke session dari token
+      // Tambahkan data dari token ke session
       if (token) {
-        session.user.id = token.id;
+        session.user.id = token.id; // INI YANG PENTING!
         session.user.role = token.role;
+        session.user.username = token.username;
+        session.user.profile_picture = token.profile_picture;
       }
       return session;
-    }
-  }
+    },
+  },
+  session: {
+    strategy: "jwt",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

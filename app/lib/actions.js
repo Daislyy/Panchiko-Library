@@ -115,21 +115,99 @@ export async function updateUserProfile(userId, formData) {
   return { success: true };
 }
 
+/* BORROW BOOK FUNCTIONS - NEW */
+export async function borrowBook(userId, bookId) {
+  try {
+    // Check if user already has pending or borrowed status for this book
+    const [existing] = await connection.execute(
+      "SELECT * FROM borrows WHERE user_id = ? AND book_id = ? AND status IN ('pending', 'borrowed')",
+      [userId, bookId]
+    );
+
+    if (existing.length > 0) {
+      return {
+        success: false,
+        error: "Anda sudah memiliki peminjaman aktif untuk buku ini",
+      };
+    }
+
+    const borrowDate = new Date().toISOString().split("T")[0];
+    const returnDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0]; // 14 days from now
+
+    await connection.execute(
+      "INSERT INTO borrows (user_id, book_id, borrow_date, return_date, status) VALUES (?, ?, ?, ?, 'pending')",
+      [userId, bookId, borrowDate, returnDate]
+    );
+
+    revalidatePath("/dashboard");
+    revalidatePath("/admin/transactions");
+    return {
+      success: true,
+      message:
+        "Permintaan peminjaman berhasil dikirim. Menunggu persetujuan admin.",
+    };
+  } catch (error) {
+    console.error("Borrow error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getUserBorrows(userId) {
+  try {
+    const [borrows] = await connection.execute(
+      `
+      SELECT 
+        b.borrow_id,
+        b.borrow_date,
+        b.return_date,
+        b.status,
+        bk.book_id,
+        bk.nama_buku,
+        bk.author,
+        bk.cover_image
+      FROM borrows b
+      INNER JOIN buku bk ON b.book_id = bk.book_id
+      WHERE b.user_id = ?
+      ORDER BY b.borrow_date DESC
+    `,
+      [userId]
+    );
+
+    return { success: true, data: borrows };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
 /* admin*/
 export async function getAllTransactions() {
   try {
     const [transactions] = await connection.execute(`
       SELECT 
         b.borrow_id,
+        b.user_id,
         u.username,
+        u.email,
+        b.book_id,
         bk.nama_buku,
+        bk.author,
+        bk.cover_image,
         b.borrow_date,
         b.return_date,
         b.status
       FROM borrows b
       INNER JOIN users u ON b.user_id = u.id
       INNER JOIN buku bk ON b.book_id = bk.book_id
-      ORDER BY b.borrow_date DESC
+      ORDER BY 
+        CASE 
+          WHEN b.status = 'pending' THEN 1
+          WHEN b.status = 'borrowed' THEN 2
+          WHEN b.status = 'returned' THEN 3
+          ELSE 4
+        END,
+        b.borrow_id DESC
     `);
 
     return { success: true, data: transactions };
@@ -144,6 +222,19 @@ export async function updateTransactionStatus(borrowId, status) {
       "UPDATE borrows SET status = ? WHERE borrow_id = ?",
       [status, borrowId]
     );
+
+    revalidatePath("/admin/transactions");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function rejectBorrow(borrowId) {
+  try {
+    await connection.execute("DELETE FROM borrows WHERE borrow_id = ?", [
+      borrowId,
+    ]);
 
     revalidatePath("/admin/transactions");
     return { success: true };
@@ -316,7 +407,6 @@ export async function deleteBook(bookId) {
   return { success: true };
 }
 
-/// detail
 export async function getBookById(bookId) {
   try {
     const [rows] = await connection.execute(

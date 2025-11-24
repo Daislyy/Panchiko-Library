@@ -1,11 +1,15 @@
 import { getBookById } from "../../lib/actions";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../api/auth/[...nextauth]/route";
 import Image from "next/image";
 import Link from "next/link";
 import NavSis from "../../components/NavSis";
+import BorrowButton from "../../components/BorrowButton";
 
 export default async function BookDetail({ params }) {
   const { id } = await params;
   const bookResult = await getBookById(id);
+  const session = await getServerSession(authOptions);
 
   if (!bookResult.success || !bookResult.data) {
     return (
@@ -24,12 +28,16 @@ export default async function BookDetail({ params }) {
   }
 
   const book = bookResult.data;
+  const userId = session?.user?.id || null;
+
+  console.log("Session:", session);
+  console.log("User ID:", userId);
 
   return (
     <div className="min-h-screen bg-white">
       <NavSis />
-    
-      <main className="max-w-6xl mx-auto px-6 py-8">  
+
+      <main className="max-w-6xl mx-auto px-6 py-8">
         <div className="mb-6">
           <Link
             href="/dashboard"
@@ -41,7 +49,6 @@ export default async function BookDetail({ params }) {
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="flex flex-col lg:flex-row">
-           
             <div className="lg:w-2/5 p-8 flex items-center justify-center bg-gray-50">
               <div className="text-center">
                 <div className="relative inline-block">
@@ -55,18 +62,22 @@ export default async function BookDetail({ params }) {
                   />
                 </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-3 max-w-xs mx-auto">
-                  <button className="w-full bg-green-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md">
-                    Borrow Book
-                  </button>
-                </div>
+                {/* Borrow Button */}
+                {session && userId ? (
+                  <div className="space-y-3 max-w-xs mx-auto">
+                    <BorrowButton userId={userId} bookId={book.book_id} />
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-w-xs mx-auto">
+                    <p className="text-red-500 text-sm">
+                      Please login to borrow
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
-       
             <div className="lg:w-3/5 p-8">
-            
               <div className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 font-[Merriweather] mb-2">
                   {book.nama_buku}
@@ -76,7 +87,6 @@ export default async function BookDetail({ params }) {
                 </p>
               </div>
 
-        
               {book.genre && (
                 <div className="mb-6">
                   <span className="inline-block bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-semibold font-[Open_Sans]">
@@ -85,7 +95,6 @@ export default async function BookDetail({ params }) {
                 </div>
               )}
 
-             
               <div className="w-20 h-1 bg-[#d1b892] mb-8"></div>
 
               <div className="mb-8">

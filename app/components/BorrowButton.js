@@ -1,38 +1,57 @@
 "use client";
-import { useState } from "react";
-import { borrowBook } from "../lib/actions";
 
-export default function BorrowButton({ bookId, userId }) {
-  const [isLoading, setIsLoading] = useState(false);
+import { useState, useEffect } from "react";
+import { borrowBook } from "../lib/actions";
+import { useRouter } from "next/navigation";
+
+export default function BorrowButton({ userId, bookId }) {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log("BorrowButton mounted with:", { userId, bookId });
+  }, [userId, bookId]);
 
   const handleBorrow = async () => {
-    if (!userId) {
-      alert("Silakan login terlebih dahulu");
+    console.log("Borrow clicked!", { userId, bookId });
+
+    if (!userId || !bookId) {
+      alert("Data tidak lengkap. User ID atau Book ID tidak valid.");
       return;
     }
 
-    setIsLoading(true);
+    if (!confirm("Ajukan peminjaman buku ini?")) return;
+
+    setLoading(true);
+
     try {
       const result = await borrowBook(userId, bookId);
+      console.log("Borrow result:", result);
+
       if (result.success) {
-        alert(result.message);
+        alert(result.message || "Permintaan peminjaman berhasil dikirim!");
+        router.push("/dashboard");
+        router.refresh();
       } else {
-        alert(result.error);
+        alert(result.error || "Gagal mengajukan peminjaman");
       }
     } catch (error) {
-      alert("Terjadi kesalahan");
+      console.error("Borrow error:", error);
+      alert("Terjadi kesalahan saat mengajukan peminjaman");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <button
       onClick={handleBorrow}
-      disabled={isLoading}
-      className="bg-green-400 hover:bg-green-500 text-black font-semibold py-3 px-8 rounded-md transition-colors w-full mt-auto disabled:opacity-50"
+      disabled={loading}
+      className={`w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md font-[Open_Sans] ${
+        loading ? "opacity-50 cursor-not-allowed" : ""
+      }`}
     >
-      {isLoading ? "Mengajukan..." : "Borrow"}
+      {loading ? "Memproses..." : "Borrow Book"}
     </button>
   );
 }
