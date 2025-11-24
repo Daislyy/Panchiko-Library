@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { getAllBooks, addBook, updateBook, deleteBook } from "../lib/actions";
 import Image from "next/image";
+import { Plus, Search, Edit, Trash2, X, BookOpen, Tag } from "lucide-react";
 
 export default function BookManagement() {
   const [books, setBooks] = useState([]);
@@ -77,46 +78,68 @@ export default function BookManagement() {
         </h3>
         <button
           onClick={() => setShowAddForm(true)}
-          className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg"
+          className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg flex items-center gap-2"
         >
-          + Tambah Buku
+          <Plus size={20} />
+          Tambah Buku
         </button>
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-          <p className="text-sm text-gray-600 font-[Open_Sans]">Total Buku</p>
-          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
-            {books.length}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-[Open_Sans]">
+                Total Buku
+              </p>
+              <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+                {books.length}
+              </p>
+            </div>
+            <BookOpen size={40} className="text-blue-500" />
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-          <p className="text-sm text-gray-600 font-[Open_Sans]">
-            Kategori Genre
-          </p>
-          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
-            {uniqueGenres.length}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-[Open_Sans]">
+                Kategori Genre
+              </p>
+              <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+                {uniqueGenres.length}
+              </p>
+            </div>
+            <Tag size={40} className="text-green-500" />
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-amber-500">
-          <p className="text-sm text-gray-600 font-[Open_Sans]">
-            Hasil Pencarian
-          </p>
-          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
-            {filteredBooks.length}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-[Open_Sans]">
+                Hasil Pencarian
+              </p>
+              <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+                {filteredBooks.length}
+              </p>
+            </div>
+            <Search size={40} className="text-amber-500" />
+          </div>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="mb-6">
+      <div className="mb-6 relative">
+        <Search
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+          size={20}
+        />
         <input
           type="text"
           placeholder="Cari buku berdasarkan judul, author, atau genre..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans] text-gray-900"
+          className="w-full pl-12 pr-4 py-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans] text-gray-900"
         />
       </div>
 
@@ -220,14 +243,16 @@ export default function BookManagement() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setEditingBook(book)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md flex items-center gap-2"
                       >
+                        <Edit size={16} />
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteBook(book.book_id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md"
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md flex items-center gap-2"
                       >
+                        <Trash2 size={16} />
                         Hapus
                       </button>
                     </div>
@@ -252,9 +277,17 @@ function AddBookForm({ onSave, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <h4 className="font-bold text-2xl mb-6 font-[Merriweather] text-gray-900">
-          Tambah Buku Baru
-        </h4>
+        <div className="flex justify-between items-center mb-6">
+          <h4 className="font-bold text-2xl font-[Merriweather] text-gray-900">
+            Tambah Buku Baru
+          </h4>
+          <button
+            onClick={onCancel}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X size={24} />
+          </button>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4">
             <div>
@@ -350,9 +383,17 @@ function EditBookForm({ book, onSave, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <h4 className="font-bold text-2xl mb-6 font-[Merriweather] text-gray-900">
-          Edit Buku
-        </h4>
+        <div className="flex justify-between items-center mb-6">
+          <h4 className="font-bold text-2xl font-[Merriweather] text-gray-900">
+            Edit Buku
+          </h4>
+          <button
+            onClick={onCancel}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X size={24} />
+          </button>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4">
             <div>

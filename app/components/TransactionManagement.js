@@ -6,91 +6,68 @@ import {
   rejectBorrow,
 } from "../lib/actions";
 import Image from "next/image";
+import { 
+  RefreshCw, 
+  Receipt, 
+  Clock, 
+  BookOpen, 
+  CheckCircle, 
+  XCircle, 
+  RotateCcw 
+} from "lucide-react";
 
 export default function TransactionManagement() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); // all, pending, borrowed, returned
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     fetchTransactions();
   }, []);
 
   const fetchTransactions = async () => {
-    try {
-      const result = await getAllTransactions();
-
-      if (result.success) {
-        setTransactions(result.data);
-      } else {
-        console.error("Error fetching transactions:", result.error);
-      }
-    } catch (error) {
-      console.error("Error fetching transactions:", error);
-    } finally {
-      setLoading(false);
+    const result = await getAllTransactions();
+    if (result.success) {
+      setTransactions(result.data);
     }
+    setLoading(false);
   };
 
   const handleApprove = async (borrowId) => {
     if (!confirm("Setujui peminjaman ini?")) return;
 
-    try {
-      const result = await updateTransactionStatus(borrowId, "borrowed");
-
-      if (result.success) {
-        setTransactions((prev) =>
-          prev.map((t) =>
-            t.borrow_id === borrowId ? { ...t, status: "borrowed" } : t
-          )
-        );
-        alert("Peminjaman berhasil disetujui!");
-      } else {
-        alert("Gagal menyetujui peminjaman");
-      }
-    } catch (error) {
-      console.error("Error approving transaction:", error);
-      alert("Gagal menyetujui peminjaman");
+    const result = await updateTransactionStatus(borrowId, "borrowed");
+    if (result.success) {
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.borrow_id === borrowId ? { ...t, status: "borrowed" } : t
+        )
+      );
+      alert("Peminjaman berhasil disetujui!");
     }
   };
 
   const handleReject = async (borrowId) => {
     if (!confirm("Tolak peminjaman ini? Data akan dihapus.")) return;
 
-    try {
-      const result = await rejectBorrow(borrowId);
-
-      if (result.success) {
-        setTransactions((prev) => prev.filter((t) => t.borrow_id !== borrowId));
-        alert("Peminjaman berhasil ditolak");
-      } else {
-        alert("Gagal menolak peminjaman");
-      }
-    } catch (error) {
-      console.error("Error rejecting transaction:", error);
-      alert("Gagal menolak peminjaman");
+    const result = await rejectBorrow(borrowId);
+    if (result.success) {
+      setTransactions((prev) => prev.filter((t) => t.borrow_id !== borrowId));
+      alert("Peminjaman berhasil ditolak");
     }
   };
 
   const handleReturn = async (borrowId) => {
     if (!confirm("Tandai buku ini sudah dikembalikan?")) return;
 
-    try {
-      const result = await updateTransactionStatus(borrowId, "returned");
-
-      if (result.success) {
-        setTransactions((prev) =>
-          prev.map((t) =>
-            t.borrow_id === borrowId ? { ...t, status: "returned" } : t
-          )
-        );
-        alert("Buku berhasil ditandai sudah dikembalikan!");
-      } else {
-        alert("Gagal mengupdate status");
-      }
-    } catch (error) {
-      console.error("Error updating transaction:", error);
-      alert("Gagal mengupdate status");
+    const result = await updateTransactionStatus(borrowId, "returned");
+    if (result.success) {
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.borrow_id === borrowId ? { ...t, status: "returned" } : t
+        )
+      );
+      alert("Buku berhasil ditandai sudah dikembalikan!");
     }
   };
 
@@ -99,15 +76,9 @@ export default function TransactionManagement() {
     return t.status === filter;
   });
 
-  const pendingCount = transactions.filter(
-    (t) => t.status === "pending"
-  ).length;
-  const borrowedCount = transactions.filter(
-    (t) => t.status === "borrowed"
-  ).length;
-  const returnedCount = transactions.filter(
-    (t) => t.status === "returned"
-  ).length;
+  const pendingCount = transactions.filter((t) => t.status === "pending").length;
+  const borrowedCount = transactions.filter((t) => t.status === "borrowed").length;
+  const returnedCount = transactions.filter((t) => t.status === "returned").length;
 
   if (loading)
     return (
@@ -124,8 +95,9 @@ export default function TransactionManagement() {
         </h3>
         <button
           onClick={fetchTransactions}
-          className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg"
+          className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg flex items-center gap-2"
         >
+          <RefreshCw size={20} />
           Refresh Data
         </button>
       </div>
@@ -133,28 +105,48 @@ export default function TransactionManagement() {
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-          <p className="text-sm text-gray-600 font-[Open_Sans]">Total</p>
-          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
-            {transactions.length}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-[Open_Sans]">Total</p>
+              <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+                {transactions.length}
+              </p>
+            </div>
+            <Receipt size={40} className="text-blue-500" />
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
-          <p className="text-sm text-gray-600 font-[Open_Sans]">Pending</p>
-          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
-            {pendingCount}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-[Open_Sans]">Pending</p>
+              <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+                {pendingCount}
+              </p>
+            </div>
+            <Clock size={40} className="text-yellow-500" />
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-orange-500">
-          <p className="text-sm text-gray-600 font-[Open_Sans]">Dipinjam</p>
-          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
-            {borrowedCount}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-[Open_Sans]">Dipinjam</p>
+              <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+                {borrowedCount}
+              </p>
+            </div>
+            <BookOpen size={40} className="text-orange-500" />
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-          <p className="text-sm text-gray-600 font-[Open_Sans]">Dikembalikan</p>
-          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
-            {returnedCount}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-[Open_Sans]">Dikembalikan</p>
+              <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+                {returnedCount}
+              </p>
+            </div>
+            <CheckCircle size={40} className="text-green-500" />
+          </div>
         </div>
       </div>
 
@@ -162,42 +154,46 @@ export default function TransactionManagement() {
       <div className="flex gap-3 mb-6">
         <button
           onClick={() => setFilter("all")}
-          className={`px-6 py-2 rounded-lg font-[Open_Sans] font-semibold transition-colors ${
+          className={`px-6 py-2 rounded-lg font-[Open_Sans] font-semibold transition-colors flex items-center gap-2 ${
             filter === "all"
               ? "bg-gray-800 text-white"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
+          <Receipt size={18} />
           Semua ({transactions.length})
         </button>
         <button
           onClick={() => setFilter("pending")}
-          className={`px-6 py-2 rounded-lg font-[Open_Sans] font-semibold transition-colors ${
+          className={`px-6 py-2 rounded-lg font-[Open_Sans] font-semibold transition-colors flex items-center gap-2 ${
             filter === "pending"
               ? "bg-yellow-500 text-white"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
+          <Clock size={18} />
           Pending ({pendingCount})
         </button>
         <button
           onClick={() => setFilter("borrowed")}
-          className={`px-6 py-2 rounded-lg font-[Open_Sans] font-semibold transition-colors ${
+          className={`px-6 py-2 rounded-lg font-[Open_Sans] font-semibold transition-colors flex items-center gap-2 ${
             filter === "borrowed"
               ? "bg-orange-500 text-white"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
+          <BookOpen size={18} />
           Dipinjam ({borrowedCount})
         </button>
         <button
           onClick={() => setFilter("returned")}
-          className={`px-6 py-2 rounded-lg font-[Open_Sans] font-semibold transition-colors ${
+          className={`px-6 py-2 rounded-lg font-[Open_Sans] font-semibold transition-colors flex items-center gap-2 ${
             filter === "returned"
               ? "bg-green-500 text-white"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
+          <CheckCircle size={18} />
           Dikembalikan ({returnedCount})
         </button>
       </div>
@@ -252,11 +248,11 @@ export default function TransactionManagement() {
                       alt={transaction.nama_buku}
                       width={50}
                       height={70}
-                      className="rounded object-cover"
+                      className="rounded object-cover shadow-md border-2 border-gray-200"
                     />
                   </td>
                   <td className="py-4 px-6">
-                    <p className="font-semibold font-[Open_Sans]">
+                    <p className="font-semibold font-[Open_Sans] text-gray-900">
                       {transaction.nama_buku}
                     </p>
                     <p className="text-sm text-gray-600 font-[Open_Sans]">
@@ -264,26 +260,26 @@ export default function TransactionManagement() {
                     </p>
                   </td>
                   <td className="py-4 px-6">
-                    <p className="font-semibold font-[Open_Sans]">
+                    <p className="font-semibold font-[Open_Sans] text-gray-900">
                       {transaction.username}
                     </p>
                     <p className="text-sm text-gray-600 font-[Open_Sans]">
                       {transaction.email}
                     </p>
                   </td>
-                  <td className="py-4 px-6 font-[Open_Sans]">
+                  <td className="py-4 px-6 font-[Open_Sans] text-gray-700">
                     {new Date(transaction.borrow_date).toLocaleDateString(
                       "id-ID"
                     )}
                   </td>
-                  <td className="py-4 px-6 font-[Open_Sans]">
+                  <td className="py-4 px-6 font-[Open_Sans] text-gray-700">
                     {new Date(transaction.return_date).toLocaleDateString(
                       "id-ID"
                     )}
                   </td>
                   <td className="py-4 px-6">
                     <span
-                      className={`px-4 py-2 rounded-full text-sm font-bold font-[Open_Sans] ${
+                      className={`px-4 py-2 rounded-full text-sm font-bold font-[Open_Sans] flex items-center gap-2 w-fit ${
                         transaction.status === "pending"
                           ? "bg-yellow-100 text-yellow-800 border border-yellow-300"
                           : transaction.status === "borrowed"
@@ -291,11 +287,22 @@ export default function TransactionManagement() {
                           : "bg-green-100 text-green-800 border border-green-300"
                       }`}
                     >
-                      {transaction.status === "pending"
-                        ? "Menunggu"
-                        : transaction.status === "borrowed"
-                        ? "Dipinjam"
-                        : "Dikembalikan"}
+                      {transaction.status === "pending" ? (
+                        <>
+                          <Clock size={16} />
+                          Menunggu
+                        </>
+                      ) : transaction.status === "borrowed" ? (
+                        <>
+                          <BookOpen size={16} />
+                          Dipinjam
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle size={16} />
+                          Dikembalikan
+                        </>
+                      )}
                     </span>
                   </td>
                   <td className="py-4 px-6">
@@ -304,14 +311,16 @@ export default function TransactionManagement() {
                         <>
                           <button
                             onClick={() => handleApprove(transaction.borrow_id)}
-                            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md"
+                            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md flex items-center gap-2"
                           >
+                            <CheckCircle size={16} />
                             Setuju
                           </button>
                           <button
                             onClick={() => handleReject(transaction.borrow_id)}
-                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md"
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md flex items-center gap-2"
                           >
+                            <XCircle size={16} />
                             Tolak
                           </button>
                         </>
@@ -319,13 +328,15 @@ export default function TransactionManagement() {
                       {transaction.status === "borrowed" && (
                         <button
                           onClick={() => handleReturn(transaction.borrow_id)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md"
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md flex items-center gap-2"
                         >
+                          <RotateCcw size={16} />
                           Tandai Kembali
                         </button>
                       )}
                       {transaction.status === "returned" && (
-                        <span className="text-gray-500 text-sm font-[Open_Sans] italic">
+                        <span className="text-gray-500 text-sm font-[Open_Sans] italic flex items-center gap-2">
+                          <CheckCircle size={16} />
                           Selesai
                         </span>
                       )}
