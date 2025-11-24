@@ -1,4 +1,3 @@
-"use client";
 import { useState, useEffect } from "react";
 import {
   getAllTransactions,
@@ -6,15 +5,17 @@ import {
   rejectBorrow,
 } from "../lib/actions";
 import Image from "next/image";
-import { 
-  RefreshCw, 
-  Receipt, 
-  Clock, 
-  BookOpen, 
-  CheckCircle, 
-  XCircle, 
-  RotateCcw 
+import {
+  RefreshCw,
+  Receipt,
+  Clock,
+  BookOpen,
+  CheckCircle,
+  XCircle,
+  RotateCcw,
+  Download,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 
 export default function TransactionManagement() {
   const [transactions, setTransactions] = useState([]);
@@ -71,14 +72,63 @@ export default function TransactionManagement() {
     }
   };
 
+  const handleExportExcel = () => {
+    const dataToExport = filteredTransactions.map((transaction, index) => ({
+      No: index + 1,
+      "Nama Buku": transaction.nama_buku,
+      Author: transaction.author,
+      Peminjam: transaction.username,
+      Email: transaction.email,
+      "Tanggal Pinjam": new Date(transaction.borrow_date).toLocaleDateString(
+        "id-ID"
+      ),
+      "Tanggal Kembali": new Date(transaction.return_date).toLocaleDateString(
+        "id-ID"
+      ),
+      Status:
+        transaction.status === "pending"
+          ? "Menunggu"
+          : transaction.status === "borrowed"
+          ? "Dipinjam"
+          : "Dikembalikan",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Transaksi");
+
+    // Set column widths
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 30 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 30 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+    ];
+
+    const fileName = `Transaksi_Peminjaman_${
+      new Date().toISOString().split("T")[0]
+    }.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   const filteredTransactions = transactions.filter((t) => {
     if (filter === "all") return true;
     return t.status === filter;
   });
 
-  const pendingCount = transactions.filter((t) => t.status === "pending").length;
-  const borrowedCount = transactions.filter((t) => t.status === "borrowed").length;
-  const returnedCount = transactions.filter((t) => t.status === "returned").length;
+  const pendingCount = transactions.filter(
+    (t) => t.status === "pending"
+  ).length;
+  const borrowedCount = transactions.filter(
+    (t) => t.status === "borrowed"
+  ).length;
+  const returnedCount = transactions.filter(
+    (t) => t.status === "returned"
+  ).length;
 
   if (loading)
     return (
@@ -93,13 +143,22 @@ export default function TransactionManagement() {
         <h3 className="text-2xl font-semibold font-[Merriweather]">
           Daftar Transaksi Peminjaman
         </h3>
-        <button
-          onClick={fetchTransactions}
-          className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg flex items-center gap-2"
-        >
-          <RefreshCw size={20} />
-          Refresh Data
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleExportExcel}
+            className="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg flex items-center gap-2"
+          >
+            <Download size={20} />
+            Export Excel
+          </button>
+          <button
+            onClick={fetchTransactions}
+            className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg flex items-center gap-2"
+          >
+            <RefreshCw size={20} />
+            Refresh Data
+          </button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -140,7 +199,9 @@ export default function TransactionManagement() {
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 font-[Open_Sans]">Dikembalikan</p>
+              <p className="text-sm text-gray-600 font-[Open_Sans]">
+                Dikembalikan
+              </p>
               <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
                 {returnedCount}
               </p>
