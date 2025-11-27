@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import Logout from "./Logout";
 
 export default function Sidebar({ username, profilePicture }) {
   const pathname = usePathname();
@@ -11,10 +12,8 @@ export default function Sidebar({ username, profilePicture }) {
 
   return (
     <div className="w-64 bg-[#1a1a1a] h-screen fixed left-0 top-16 border-r border-gray-700">
-    
       <div className="p-6 border-b border-gray-700">
         <div className="flex items-center space-x-3">
-        
           <div className="w-12 h-12 rounded-full overflow-hidden bg-amber-500 flex items-center justify-center">
             {profilePicture ? (
               <Image
@@ -39,7 +38,7 @@ export default function Sidebar({ username, profilePicture }) {
         </div>
       </div>
 
-      {/* Menu Items */}
+      
       <nav className="p-4">
         <ul className="space-y-2">
           {menuItems.map((item) => (
@@ -56,10 +55,9 @@ export default function Sidebar({ username, profilePicture }) {
                 <span>{item.name}</span>
               </Link>
             </li>
-
-            
-            
           ))}
+
+          <Logout></Logout> 
         </ul>
       </nav>
     </div>

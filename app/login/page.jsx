@@ -83,7 +83,7 @@ export default function Login() {
           {/* Form */}
           <form action={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">
+              <label className="block text-gray-700 font-semibold mb-2 font-[Merriweather]">
                 Email*
               </label>
               <input
@@ -92,12 +92,12 @@ export default function Login() {
                 placeholder="Enter your email"
                 required
                 disabled={isLoading}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans] text-gray-900 placeholder-gray-500"
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 font-semibold mb-2">
+              <label className="block text-gray-700 font-semibold mb-2 font-[Merriweather]">
                 Password*
               </label>
               <input
@@ -106,30 +106,35 @@ export default function Login() {
                 placeholder="Enter your password"
                 required
                 disabled={isLoading}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans] text-gray-900 placeholder-gray-500"
               />
             </div>
 
             <div className="border-t border-gray-300 my-6"></div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gray-700 hover:bg-gray-600 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-md transition-colors duration-300"
-            >
-              {isLoading ? "Processing..." : "Login"}
-            </button>
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-gray-900 font-[Merriweather] mb-4">
+                Login User
+              </h3>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gray-700 hover:bg-gray-600 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-md transition-colors duration-300 font-[Merriweather] text-lg"
+              >
+                {isLoading ? "Processing..." : "Login"}
+              </button>
+            </div>
           </form>
 
           {/* Link register */}
           <div className="text-center mt-6">
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 text-sm font-[Open_Sans]">
               Don't have an account?{" "}
               <a
                 href="/register"
-                className="text-gray-700 hover:text-gray-600 font-semibold"
+                className="text-gray-700 hover:text-gray-600 font-semibold transition-colors duration-300"
               >
-                Register here 
+                Register here
               </a>
             </p>
           </div>

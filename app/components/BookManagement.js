@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { getAllBooks, addBook, updateBook, deleteBook } from "../lib/actions";
 import Image from "next/image";
-import { Plus, Search, Edit, Trash2, X, BookOpen, Tag } from "lucide-react";
 
 export default function BookManagement() {
   const [books, setBooks] = useState([]);
@@ -27,7 +26,7 @@ export default function BookManagement() {
       setShowAddForm(false);
       fetchBooks();
       alert("Buku berhasil ditambahkan");
-    }
+    } else alert(result.error);
   };
 
   const handleEditBook = async (bookId, formData) => {
@@ -36,7 +35,7 @@ export default function BookManagement() {
       setEditingBook(null);
       fetchBooks();
       alert("Data berhasil diupdate");
-    }
+    } else alert(result.error);
   };
 
   const handleDeleteBook = async (bookId) => {
@@ -45,23 +44,20 @@ export default function BookManagement() {
       if (result.success) {
         fetchBooks();
         alert("Buku berhasil dihapus");
-      }
+      } else alert(result.error);
     }
   };
 
-  const filteredBooks = books.filter((book) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      book.nama_buku.toLowerCase().includes(searchLower) ||
-      book.author.toLowerCase().includes(searchLower) ||
-      (book.genre && book.genre.toLowerCase().includes(searchLower))
-    );
-  });
-
-  const allGenres = books.flatMap((b) =>
-    b.genre ? b.genre.split(",").map((g) => g.trim()) : []
+  const filteredBooks = books.filter(
+    (book) =>
+      book.nama_buku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (book.genre &&
+        book.genre.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-  const uniqueGenres = [...new Set(allGenres)];
+
+  const genres = [...new Set(books.map((b) => b.genre).filter(Boolean))];
+  const totalStock = books.reduce((sum, b) => sum + (b.stock || 0), 0);
 
   if (loading)
     return (
@@ -76,74 +72,63 @@ export default function BookManagement() {
         <h3 className="text-2xl font-semibold font-[Merriweather]">
           Daftar Koleksi Buku
         </h3>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg flex items-center gap-2"
-        >
-          <Plus size={20} />
-          Tambah Buku
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={fetchBooks}
+            className="bg-gray-600 hover:bg-gray-700 text-white font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg"
+          >
+            Refresh Data
+          </button>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg"
+          >
+            + Tambah Buku
+          </button>
+        </div>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 font-[Open_Sans]">
-                Total Buku
-              </p>
-              <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
-                {books.length}
-              </p>
-            </div>
-            <BookOpen size={40} className="text-blue-500" />
-          </div>
+          <p className="text-sm text-gray-600 font-[Open_Sans]">Total Buku</p>
+          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+            {books.length}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 font-[Open_Sans]">
-                Kategori Genre
-              </p>
-              <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
-                {uniqueGenres.length}
-              </p>
-            </div>
-            <Tag size={40} className="text-green-500" />
-          </div>
+          <p className="text-sm text-gray-600 font-[Open_Sans]">Total Stok</p>
+          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+            {totalStock}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+          <p className="text-sm text-gray-600 font-[Open_Sans]">
+            Kategori Genre
+          </p>
+          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+            {genres.length}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-amber-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 font-[Open_Sans]">
-                Hasil Pencarian
-              </p>
-              <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
-                {filteredBooks.length}
-              </p>
-            </div>
-            <Search size={40} className="text-amber-500" />
-          </div>
+          <p className="text-sm text-gray-600 font-[Open_Sans]">
+            Hasil Pencarian
+          </p>
+          <p className="text-3xl font-bold text-gray-900 font-[Merriweather]">
+            {filteredBooks.length}
+          </p>
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-6 relative">
-        <Search
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-          size={20}
-        />
+      <div className="mb-6">
         <input
           type="text"
           placeholder="Cari buku berdasarkan judul, author, atau genre..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans] text-gray-900"
+          className="w-full p-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans] text-gray-900"
         />
       </div>
 
-      {/* Add Form Modal */}
       {showAddForm && (
         <AddBookForm
           onSave={handleAddBook}
@@ -151,7 +136,6 @@ export default function BookManagement() {
         />
       )}
 
-      {/* Edit Form Modal */}
       {editingBook && (
         <EditBookForm
           book={editingBook}
@@ -160,7 +144,6 @@ export default function BookManagement() {
         />
       )}
 
-      {/* Books Table */}
       {filteredBooks.length === 0 ? (
         <div className="text-center py-12 bg-gray-100 rounded-lg">
           <p className="text-gray-600 font-[Open_Sans] text-lg">
@@ -185,6 +168,12 @@ export default function BookManagement() {
                 </th>
                 <th className="py-4 px-6 text-left font-[Merriweather]">
                   Genre
+                </th>
+                <th className="py-4 px-6 text-left font-[Merriweather]">
+                  Stok
+                </th>
+                <th className="py-4 px-6 text-left font-[Merriweather]">
+                  Tersedia
                 </th>
                 <th className="py-4 px-6 text-left font-[Merriweather]">
                   Ditambahkan
@@ -224,17 +213,26 @@ export default function BookManagement() {
                   </td>
                   <td className="py-4 px-6">
                     {book.genre && (
-                      <div className="flex flex-wrap gap-2">
-                        {book.genre.split(",").map((g, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 rounded-full text-sm font-semibold font-[Open_Sans] bg-indigo-100 text-indigo-800 border border-indigo-300"
-                          >
-                            {g.trim()}
-                          </span>
-                        ))}
-                      </div>
+                      <span className="px-3 py-1 rounded-full text-sm font-semibold font-[Open_Sans] bg-indigo-100 text-indigo-800 border border-indigo-300">
+                        {book.genre}
+                      </span>
                     )}
+                  </td>
+                  <td className="py-4 px-6">
+                    <span className="font-bold font-[Open_Sans] text-gray-900">
+                      {book.stock || 0}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-bold font-[Open_Sans] ${
+                        (book.available_stock || 0) > 0
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {book.available_stock || 0}
+                    </span>
                   </td>
                   <td className="py-4 px-6 font-[Open_Sans] text-gray-700">
                     {new Date(book.created_at).toLocaleDateString("id-ID")}
@@ -243,16 +241,14 @@ export default function BookManagement() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setEditingBook(book)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md flex items-center gap-2"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md"
                       >
-                        <Edit size={16} />
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteBook(book.book_id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md flex items-center gap-2"
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold font-[Open_Sans] transition-colors shadow-md"
                       >
-                        <Trash2 size={16} />
                         Hapus
                       </button>
                     </div>
@@ -275,21 +271,13 @@ function AddBookForm({ onSave, onCancel }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="flex justify-between items-center mb-6">
-          <h4 className="font-bold text-2xl font-[Merriweather] text-gray-900">
-            Tambah Buku Baru
-          </h4>
-          <button
-            onClick={onCancel}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X size={24} />
-          </button>
-        </div>
+        <h4 className="font-bold text-2xl mb-6 font-[Merriweather] text-gray-900">
+          Tambah Buku Baru
+        </h4>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold mb-2 font-[Open_Sans] text-gray-700">
                 Nama Buku *
@@ -297,9 +285,9 @@ function AddBookForm({ onSave, onCancel }) {
               <input
                 type="text"
                 name="nama_buku"
-                placeholder="Masukkan nama buku"
+                placeholder="Nama Buku"
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans]"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -309,9 +297,9 @@ function AddBookForm({ onSave, onCancel }) {
               <input
                 type="text"
                 name="author"
-                placeholder="Masukkan nama author"
+                placeholder="Author"
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans]"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -321,35 +309,46 @@ function AddBookForm({ onSave, onCancel }) {
               <input
                 type="text"
                 name="genre"
-                placeholder="Contoh: Fiction, Romance, Action (pisahkan dengan koma)"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans]"
+                placeholder="Genre (e.g., Fiction, Mystery)"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
-              <p className="text-xs text-gray-500 mt-1 font-[Open_Sans]">
-                Pisahkan multiple genre dengan koma
-              </p>
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2 font-[Open_Sans] text-gray-700">
-                Prolog / Sinopsis
-              </label>
-              <textarea
-                name="prolog"
-                placeholder="Tulis sinopsis atau prolog buku..."
-                rows="4"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans]"
-              ></textarea>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2 font-[Open_Sans] text-gray-700">
-                Cover Buku
+                Stok Buku *
               </label>
               <input
-                type="file"
-                name="cover_image"
-                accept="image/*"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                type="number"
+                name="stock"
+                placeholder="Jumlah stok"
+                min="0"
+                defaultValue="5"
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-2 font-[Open_Sans] text-gray-700">
+              Prolog / Sinopsis
+            </label>
+            <textarea
+              name="prolog"
+              placeholder="Prolog atau sinopsis buku..."
+              rows="4"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            ></textarea>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-2 font-[Open_Sans] text-gray-700">
+              Cover Buku
+            </label>
+            <input
+              type="file"
+              name="cover_image"
+              accept="image/*"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            />
           </div>
           <div className="flex gap-4 pt-4">
             <button
@@ -381,21 +380,13 @@ function EditBookForm({ book, onSave, onCancel }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="flex justify-between items-center mb-6">
-          <h4 className="font-bold text-2xl font-[Merriweather] text-gray-900">
-            Edit Buku
-          </h4>
-          <button
-            onClick={onCancel}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X size={24} />
-          </button>
-        </div>
+        <h4 className="font-bold text-2xl mb-6 font-[Merriweather] text-gray-900">
+          Edit Buku
+        </h4>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold mb-2 font-[Open_Sans] text-gray-700">
                 Nama Buku *
@@ -405,7 +396,7 @@ function EditBookForm({ book, onSave, onCancel }) {
                 name="nama_buku"
                 defaultValue={book.nama_buku}
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans]"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -417,7 +408,7 @@ function EditBookForm({ book, onSave, onCancel }) {
                 name="author"
                 defaultValue={book.author}
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans]"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -428,47 +419,59 @@ function EditBookForm({ book, onSave, onCancel }) {
                 type="text"
                 name="genre"
                 defaultValue={book.genre}
-                placeholder="Contoh: Fiction, Romance, Action (pisahkan dengan koma)"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans]"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
-              <p className="text-xs text-gray-500 mt-1 font-[Open_Sans]">
-                Pisahkan multiple genre dengan koma
-              </p>
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2 font-[Open_Sans] text-gray-700">
-                Prolog / Sinopsis
-              </label>
-              <textarea
-                name="prolog"
-                defaultValue={book.prolog}
-                rows="4"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent font-[Open_Sans]"
-              ></textarea>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2 font-[Open_Sans] text-gray-700">
-                Cover Buku Baru
+                Stok Buku *
               </label>
               <input
-                type="file"
-                name="cover_image"
-                accept="image/*"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                type="number"
+                name="stock"
+                defaultValue={book.stock || 0}
+                min="0"
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 font-[Open_Sans] mb-2">
-                Cover saat ini:
+              <p className="text-xs text-gray-500 mt-1 font-[Open_Sans]">
+                Stok tersedia saat ini: {book.available_stock || 0}
               </p>
-              <Image
-                src={book.cover_image || "/images/default-book-cover.png"}
-                alt={book.nama_buku}
-                width={120}
-                height={160}
-                className="rounded-lg object-cover shadow-md border-2 border-gray-200"
-              />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-2 font-[Open_Sans] text-gray-700">
+              Prolog / Sinopsis
+            </label>
+            <textarea
+              name="prolog"
+              defaultValue={book.prolog}
+              rows="4"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            ></textarea>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-2 font-[Open_Sans] text-gray-700">
+              Cover Buku Baru
+            </label>
+            <input
+              type="file"
+              name="cover_image"
+              accept="image/*"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-600 font-[Open_Sans] mb-2">
+              Cover saat ini:
+            </p>
+            <Image
+              src={book.cover_image || "/images/default-book-cover.png"}
+              alt={book.nama_buku}
+              width={120}
+              height={160}
+              className="rounded-lg object-cover shadow-md border-2 border-gray-200"
+            />
           </div>
           <div className="flex gap-4 pt-4">
             <button

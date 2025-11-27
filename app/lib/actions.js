@@ -8,7 +8,7 @@ import { z } from "zod";
 import path from "path";
 import { writeFile } from "fs/promises";
 
-/* validasod */
+/* validasi */
 const userSchema = z.object({
   username: z.string().min(3, "Username terlalu pendek"),
   email: z.string().email("Email tidak valid"),
@@ -21,6 +21,7 @@ const bookSchema = z.object({
   author: z.string().min(1, "Author harus diisi"),
   genre: z.string().nullable().optional(),
   prolog: z.string().nullable().optional(),
+  stock: z.number().min(0, "Stok tidak boleh negatif").optional(),
 });
 
 // user manage
@@ -115,7 +116,7 @@ export async function updateUserProfile(userId, formData) {
   return { success: true };
 }
 
-/* BORROW BOOK FUNCTIONS - NEW */
+/* BORROW BOOK FUNCTIONS */
 export async function borrowBook(userId, bookId) {
   const [existing] = await connection.execute(
     "SELECT * FROM borrows WHERE user_id = ? AND book_id = ? AND status IN ('pending', 'borrowed')",
@@ -151,27 +152,27 @@ export async function borrowBook(userId, bookId) {
 export async function getUserBorrows(userId) {
   const [borrows] = await connection.execute(
     `
-      SELECT 
-        b.borrow_id,
-        b.borrow_date,
-        b.return_date,
-        b.status,
-        bk.book_id,
-        bk.nama_buku,
-        bk.author,
-        bk.cover_image
-      FROM borrows b
-      INNER JOIN buku bk ON b.book_id = bk.book_id
-      WHERE b.user_id = ?
-      ORDER BY b.borrow_date DESC
-    `,
+    SELECT 
+      b.borrow_id,
+      b.borrow_date,
+      b.return_date,
+      b.status,
+      bk.book_id,
+      bk.nama_buku,
+      bk.author,
+      bk.cover_image
+    FROM borrows b
+    INNER JOIN buku bk ON b.book_id = bk.book_id
+    WHERE b.user_id = ?
+    ORDER BY b.borrow_date DESC
+  `,
     [userId]
   );
 
   return { success: true, data: borrows };
 }
 
-/* admin*/
+/* ADMIN FUNCTIONS */
 export async function getAllTransactions() {
   const [transactions] = await connection.execute(`
     SELECT 
@@ -203,21 +204,66 @@ export async function getAllTransactions() {
 }
 
 export async function updateTransactionStatus(borrowId, status) {
+  // Get borrow info
+  const [borrow] = await connection.execute(
+    "SELECT book_id FROM borrows WHERE borrow_id = ?",
+    [borrowId]
+  );
+
+  if (borrow.length === 0) {
+    return { success: false, error: "Peminjaman tidak ditemukan" };
+  }
+
+  const bookId = borrow[0].book_id;
+
+  // Update borrow status
   await connection.execute(
     "UPDATE borrows SET status = ? WHERE borrow_id = ?",
     [status, borrowId]
   );
 
+  // Update available stock based on status
+  if (status === "borrowed") {
+    // Kurangi stok tersedia
+    await connection.execute(
+      "UPDATE buku SET available_stock = available_stock - 1 WHERE book_id = ? AND available_stock > 0",
+      [bookId]
+    );
+  } else if (status === "returned") {
+    // Tambah kembali stok tersedia
+    await connection.execute(
+      "UPDATE buku SET available_stock = available_stock + 1 WHERE book_id = ?",
+      [bookId]
+    );
+  }
+
   revalidatePath("/admin/transactions");
+  revalidatePath("/dashboard");
   return { success: true };
 }
 
 export async function rejectBorrow(borrowId) {
+  // Get borrow info to check if it was borrowed
+  const [borrow] = await connection.execute(
+    "SELECT book_id, status FROM borrows WHERE borrow_id = ?",
+    [borrowId]
+  );
+
+  if (borrow.length > 0 && borrow[0].status === "borrowed") {
+    // Jika statusnya borrowed, kembalikan stok
+    await connection.execute(
+      "UPDATE buku SET available_stock = available_stock + 1 WHERE book_id = ?",
+      [borrow[0].book_id]
+    );
+  }
+
+  // Delete the borrow record
   await connection.execute("DELETE FROM borrows WHERE borrow_id = ?", [
     borrowId,
   ]);
 
   revalidatePath("/admin/transactions");
+  revalidatePath("/dashboard");
   return { success: true };
 }
 
@@ -253,10 +299,14 @@ export async function addMember(formData) {
 
   const hashed = bcrypt.hashSync(data.password);
 
-  await connection.execute(
+  const [result] = await connection.execute(
     "INSERT INTO users (username, email, password, role, profile_picture) VALUES (?, ?, ?, ?, ?)",
     [data.username, data.email, hashed, data.role, imagePath]
   );
+
+  if (!result.insertId) {
+    return { success: false, error: "Username atau email sudah terdaftar" };
+  }
 
   revalidatePath("/admin/members");
   return { success: true };
@@ -296,9 +346,10 @@ export async function deleteMember(userId) {
   return { success: true };
 }
 
+/* BOOK MANAGEMENT FUNCTIONS */
 export async function getAllBooks() {
   const [books] = await connection.execute(`
-    SELECT book_id, nama_buku, author, genre, cover_image, prolog, created_at
+    SELECT book_id, nama_buku, author, genre, cover_image, prolog, stock, available_stock, created_at
     FROM buku 
     ORDER BY created_at DESC
   `);
@@ -307,11 +358,14 @@ export async function getAllBooks() {
 }
 
 export async function addBook(formData) {
+  const stock = parseInt(formData.get("stock")) || 0;
+
   const data = bookSchema.parse({
     nama_buku: formData.get("nama_buku"),
     author: formData.get("author"),
     genre: formData.get("genre"),
     prolog: formData.get("prolog"),
+    stock: stock,
   });
 
   const file = formData.get("cover_image");
@@ -327,20 +381,32 @@ export async function addBook(formData) {
   }
 
   await connection.execute(
-    "INSERT INTO buku (nama_buku, author, genre, cover_image, prolog) VALUES (?, ?, ?, ?, ?)",
-    [data.nama_buku, data.author, data.genre, imagePath, data.prolog]
+    "INSERT INTO buku (nama_buku, author, genre, cover_image, prolog, stock, available_stock) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [
+      data.nama_buku,
+      data.author,
+      data.genre,
+      imagePath,
+      data.prolog,
+      data.stock,
+      data.stock,
+    ]
   );
 
   revalidatePath("/admin/books");
+  revalidatePath("/dashboard");
   return { success: true };
 }
 
 export async function updateBook(bookId, formData) {
+  const stock = parseInt(formData.get("stock")) || 0;
+
   const data = bookSchema.parse({
     nama_buku: formData.get("nama_buku"),
     author: formData.get("author"),
     genre: formData.get("genre"),
     prolog: formData.get("prolog"),
+    stock: stock,
   });
 
   const file = formData.get("cover_image");
@@ -355,18 +421,37 @@ export async function updateBook(bookId, formData) {
     imagePath = `/uploads/${filename}`;
   }
 
+  const [borrowed] = await connection.execute(
+    "SELECT COUNT(*) as count FROM borrows WHERE book_id = ? AND status = 'borrowed'",
+    [bookId]
+  );
+
+  const borrowedCount = borrowed[0].count;
+  const newAvailableStock = Math.max(0, data.stock - borrowedCount);
+
   await connection.execute(
-    "UPDATE buku SET nama_buku=?, author=?, genre=?, cover_image=?, prolog=? WHERE book_id=?",
-    [data.nama_buku, data.author, data.genre, imagePath, data.prolog, bookId]
+    "UPDATE buku SET nama_buku=?, author=?, genre=?, cover_image=?, prolog=?, stock=?, available_stock=? WHERE book_id=?",
+    [
+      data.nama_buku,
+      data.author,
+      data.genre,
+      imagePath,
+      data.prolog,
+      data.stock,
+      newAvailableStock,
+      bookId,
+    ]
   );
 
   revalidatePath("/admin/books");
+  revalidatePath("/dashboard");
   return { success: true };
 }
 
 export async function deleteBook(bookId) {
   await connection.execute("DELETE FROM buku WHERE book_id=?", [bookId]);
   revalidatePath("/admin/books");
+  revalidatePath("/dashboard");
   return { success: true };
 }
 

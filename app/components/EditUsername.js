@@ -17,7 +17,7 @@ export default function EditUsername({ currentUsername, userId, userEmail }) {
     try {
       const formData = new FormData();
       formData.append("username", username.trim());
-      formData.append("email", userEmail); // Tetap kirim email yang sama
+      formData.append("email", userEmail); //  kirim email yang sama
 
       const result = await updateUserProfile(userId, formData);
       if (result.success) {

@@ -37,35 +37,32 @@ export default async function BookDetail({ params }) {
     <div className="min-h-screen bg-white">
       <NavSis />
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        <div className="mb-6">
-          <Link
-            href="/dashboard"
-            className="text-gray-600 hover:text-[#d1b892] transition-colors font-[Open_Sans]"
-          >
-            ← Back to Dashboard
-          </Link>
-        </div>
-
+      <main className="max-w-6xl mx-auto px-6 py-12 lg:py-16">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="flex flex-col lg:flex-row">
-            <div className="lg:w-2/5 p-8 flex items-center justify-center bg-gray-50">
-              <div className="text-center">
-                <div className="relative inline-block">
+          <div className="flex flex-col lg:flex-row lg:min-h-[700px]">
+            <div className="lg:w-2/5 p-8 lg:p-12 flex items-center justify-center bg-gray-50">
+              <div className="text-center w-full">
+                <div className="relative inline-block mb-8">
                   <Image
                     src={book.cover_image || "/images/default-book-cover.png"}
                     alt={book.nama_buku}
                     width={280}
                     height={400}
-                    className="rounded-lg shadow-lg mx-auto mb-6 object-cover border-4 border-white"
+                    className="rounded-lg shadow-lg mx-auto object-cover border-4 border-white"
                     priority
                   />
                 </div>
 
-                {/* Borrow Button */}
+                
                 {session && userId ? (
                   <div className="space-y-3 max-w-xs mx-auto">
-                    <BorrowButton userId={userId} bookId={book.book_id} />
+                    {book.available_stock > 0 ? (
+                      <BorrowButton userId={userId} bookId={book.book_id} />
+                    ) : (
+                      <div className="px-6 py-3 bg-gray-300 text-gray-500 rounded-lg font-semibold font-[Open_Sans] cursor-not-allowed">
+                        Stok Habis
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-3 max-w-xs mx-auto">
@@ -77,9 +74,9 @@ export default async function BookDetail({ params }) {
               </div>
             </div>
 
-            <div className="lg:w-3/5 p-8">
+            <div className="lg:w-3/5 p-8 lg:p-12 flex flex-col justify-center">
               <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 font-[Merriweather] mb-2">
+                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 font-[Merriweather] mb-2">
                   {book.nama_buku}
                 </h1>
                 <p className="text-xl text-gray-600 font-[Open_Sans]">
@@ -95,14 +92,32 @@ export default async function BookDetail({ params }) {
                 </div>
               )}
 
-              <div className="w-20 h-1 bg-[#d1b892] mb-8"></div>
+              
+              <div className="mb-6">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600 font-[Open_Sans]">
+                    Ketersediaan:
+                  </span>
+                  {book.available_stock > 0 ? (
+                    <span className="px-4 py-2 rounded-full text-sm font-bold bg-green-100 text-green-800 border border-green-300 font-[Open_Sans]">
+                      Tersedia ({book.available_stock} buku)
+                    </span>
+                  ) : (
+                    <span className="px-4 py-2 rounded-full text-sm font-bold bg-red-100 text-red-800 border border-red-300 font-[Open_Sans]">
+                      Stok Habis
+                    </span>
+                  )}
+                </div>
+              </div>
 
-              <div className="mb-8">
+              <div className="w-20 h-1 bg-[#d1b892] mb-6"></div>
+
+              <div className="mb-6">
                 <h2 className="text-2xl font-bold mb-4 text-gray-900 font-[Merriweather]">
                   Prologue
                 </h2>
                 <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                  <div className="max-h-96 overflow-y-auto">
+                  <div className="max-h-80 overflow-y-auto">
                     <p className="text-gray-700 leading-relaxed font-[Open_Sans] text-justify whitespace-pre-line">
                       {book.prolog || "No prologue available for this book."}
                     </p>
@@ -110,7 +125,7 @@ export default async function BookDetail({ params }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <p className="text-sm text-gray-500 font-[Open_Sans] mb-1">
                     Author
