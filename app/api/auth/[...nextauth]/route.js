@@ -38,7 +38,7 @@ export const authOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // Tambahkan semua data user ke token saat login
+  
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -48,7 +48,7 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
-      // Tambahkan data dari token ke session
+
       if (token) {
         session.user.id = token.id;
         session.user.role = token.role;
@@ -60,7 +60,7 @@ export const authOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
@@ -76,26 +76,24 @@ export default withAuth(
     const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
 
-    // Jika user belum login dan mencoba akses route yang diproteksi
+
     if (!token) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
 
-    // Cek jika user mencoba akses dashboard admin
     if (pathname.startsWith("/dashboard_admin")) {
-      // Jika user bukan admin, redirect ke dashboard biasa
+    
       if (token.role !== "admin") {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
 
-    // Jika sudah login, izinkan akses ke route yang diproteksi
     return NextResponse.next();
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Cek jika route termasuk yang diproteksi
+       
         const protectedPaths = [
           "/dashboard",
           "/dashboard_admin",
@@ -107,12 +105,10 @@ export default withAuth(
           req.nextUrl.pathname.startsWith(path)
         );
 
-        // Jika route diproteksi, wajib punya token
         if (isProtectedPath) {
           return !!token;
         }
 
-        // Untuk route lain, izinkan akses
         return true;
       },
     },

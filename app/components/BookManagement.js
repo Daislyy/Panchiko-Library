@@ -74,12 +74,6 @@ export default function BookManagement() {
         </h3>
         <div className="flex gap-3">
           <button
-            onClick={fetchBooks}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg"
-          >
-            Refresh Data
-          </button>
-          <button
             onClick={() => setShowAddForm(true)}
             className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg"
           >

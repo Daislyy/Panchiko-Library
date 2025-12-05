@@ -1,2 +1,0 @@
-- [x] Edit app/components/Navbar.jsx to add 'fixed top-0 z-50' to nav className
-- [x] Edit app/page.js to change hero section padding from py-16 to pt-24 pb-16

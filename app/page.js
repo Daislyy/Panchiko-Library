@@ -4,12 +4,12 @@ import Footer from "./components/Footer";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[#2e2e2e] text-white font-[Merriweather]">
+    <main className="min-h-screen mt-10 bg-[#2e2e2e] text-white font-[Merriweather]">
       <Navbar />
 
-      {/* Hero Section */}
+   
       <section className="flex flex-col md:flex-row justify-between items-center px-6 md:px-16 pt-32 pb-20 text-center md:text-left">
-        {/* Left Text */}
+       
         <div className="flex-1 md:pr-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight font-[Merriweather]">
             Books in your hands,
@@ -21,7 +21,7 @@ export default function HomePage() {
             Panchiko connects you to stories.
           </p>
           <div className="flex justify-center md:justify-start gap-6">
-            {/* Tombol Sign-in kembali ke warna abu-abu */}
+          
             <button className="bg-gray-700 hover:bg-gray-600 px-8 py-3 rounded-md text-lg transition-colors font-[Merriweather]">
               Sign-in
             </button>
@@ -31,10 +31,10 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Divider line (hidden on mobile) */}
+      
         <div className="hidden md:block w-[1px] h-64 bg-gray-500 opacity-60 mx-12"></div>
 
-        {/* Right Books */}
+      
         <div className="flex justify-center gap-6 mt-12 md:mt-0 flex-1">
           <Image
             src="/images/everything.jpg"
@@ -60,7 +60,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Today's Pick Section - Diperlebar */}
       <section className="bg-white text-black px-8 md:px-20 py-20">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4 font-[Merriweather]">
@@ -69,7 +68,6 @@ export default function HomePage() {
           <div className="w-20 h-1 bg-amber-500 mx-auto"></div>
         </div>
 
-        {/* Grid dengan gap yang lebih lebar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 max-w-7xl mx-auto">
           {/* Book 1 */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full">
@@ -85,13 +83,11 @@ export default function HomePage() {
             <h3 className="font-bold mb-4 text-lg font-[Merriweather] min-h-[60px] flex items-center justify-center">
               Psychology of Money
             </h3>
-            {/* Tombol Borrow tetap hijau */}
             <button className="bg-green-400 hover:bg-green-500 text-black font-semibold py-3 px-8 rounded-md transition-colors w-full mt-auto">
               Borrow
             </button>
           </div>
 
-          {/* Book 2 */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full">
             <div className="flex-1 mb-6">
               <Image
@@ -110,7 +106,6 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* Book 3 */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full">
             <div className="flex-1 mb-6">
               <Image
@@ -129,7 +124,6 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* Book 4 */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full">
             <div className="flex-1 mb-6">
               <Image
@@ -149,21 +143,20 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Divider dengan spacing lebih longgar */}
         <div className="flex justify-center mt-24">
           <div className="w-3/4 h-[1px] bg-gray-300"></div>
         </div>
       </section>
 
-      {/* About Section */}
+    
       <section className="bg-white text-black px-6 md:px-16 py-20">
         <div className="flex flex-col md:flex-row items-center gap-12 max-w-6xl mx-auto">
-          {/* Left: Box Logo Panchiko */}
+          
           <div className="relative w-full md:w-96 h-64 bg-[#2e2e2e] flex items-center justify-center rounded-lg shadow-xl">
-            {/* Dot pattern */}
+          
             <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] rounded-lg"></div>
 
-            {/* Panchiko Image */}
+            
             <Image
               src="/images/panchiko.png"
               alt="Panchiko Logo"
@@ -173,7 +166,7 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Right: Text Description */}
+         
           <div className="flex-1">
             <h2 className="text-3xl font-bold mb-6 font-[Merriweather] text-[#1c1c1c] relative inline-block">
               About Panchiko
@@ -186,7 +179,7 @@ export default function HomePage() {
               online system.
             </p>
 
-            {/* Info grid */}
+    
             <div className="flex gap-12 text-center">
               <div>
                 <p className="text-3xl font-bold text-[#1c1c1c] mb-2">01</p>
@@ -206,15 +199,15 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Divider */}
+
         <div className="flex justify-center mt-20">
           <div className="w-3/4 h-[1px] bg-gray-300"></div>
         </div>
       </section>
 
-      {/* New Book Section */}
+
       <section className="bg-white text-black px-6 md:px-16 py-20">
-        {/* Title */}
+       
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4 font-[Merriweather]">
             New Book
@@ -223,7 +216,7 @@ export default function HomePage() {
         </div>
 
         <div className="flex flex-col lg:flex-row items-center gap-12 max-w-6xl mx-auto">
-          {/* Left: Prologue */}
+      
           <div className="flex-1 bg-white border border-black-200 rounded-xl shadow-lg p-8">
             <h3 className="text-2xl font-bold mb-6 font-[Merriweather] text-center lg:text-left">
               Prologue

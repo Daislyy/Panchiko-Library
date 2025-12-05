@@ -151,17 +151,10 @@ export default function TransactionManagement() {
             <Download size={20} />
             Export Excel
           </button>
-          <button
-            onClick={fetchTransactions}
-            className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold px-6 py-3 rounded-lg transition-colors font-[Open_Sans] shadow-lg flex items-center gap-2"
-          >
-            <RefreshCw size={20} />
-            Refresh Data
-          </button>
         </div>
       </div>
 
-      {/* Statistics Cards */}
+      
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
@@ -211,7 +204,7 @@ export default function TransactionManagement() {
         </div>
       </div>
 
-      {/* Filter Buttons */}
+     
       <div className="flex gap-3 mb-6">
         <button
           onClick={() => setFilter("all")}
