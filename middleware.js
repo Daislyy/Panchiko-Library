@@ -6,30 +6,38 @@ export default withAuth(
     const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
 
-   
     if (!token) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
 
     if (pathname.startsWith("/dashboard_admin")) {
-   
       if (token.role !== "admin") {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
-    }
-
- 
-    if (pathname === "/dashboard") {
-    
     }
 
     return NextResponse.next();
   },
   {
     callbacks: {
-      authorized: ({ token }) => {
-        
-        return !!token;
+      authorized: ({ token, req }) => {
+        const protectedPaths = [
+          "/dashboard",
+          "/dashboard_admin",
+          "/profile",
+          "/borrow",
+          "/my-borrows", 
+        ];
+
+        const isProtectedPath = protectedPaths.some((path) =>
+          req.nextUrl.pathname.startsWith(path)
+        );
+
+        if (isProtectedPath) {
+          return !!token;
+        }
+
+        return true;
       },
     },
   }
@@ -37,9 +45,10 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/dashboard",
+    "/dashboard/:path*",
     "/dashboard_admin/:path*",
-    "/profile",
+    "/profile/:path*",
     "/borrow/:path*",
+    "/my-borrows/:path*",
   ],
 };

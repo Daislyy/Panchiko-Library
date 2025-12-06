@@ -6,9 +6,9 @@ export default function Footer() {
   return (
     <footer className="bg-[#1a1a1a] text-white py-12 px-6 md:px-16 border-t border-gray-700">
       <div className="max-w-7xl mx-auto">
-        {/* Main Footer Content - Simplified */}
+    
         <div className="flex flex-col md:flex-row gap-8 md:gap-16 mb-8">
-          {/* Brand Section - Left Aligned */}
+       
           <div className="flex-1">
             <div className="flex items-center gap-4 mb-4">
               <Image
@@ -25,7 +25,7 @@ export default function Footer() {
               books.
             </p>
 
-            {/* Contact Info - Simplified */}
+       
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <span className="text-amber-50  0 text-sm">Email:</span>
@@ -41,7 +41,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Follow Us - Simplified */}
+      
           <div className="flex-1">
             <h3 className="font-bold mb-4 text-lg font-[Merriweather]">
               Follow Us
